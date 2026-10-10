@@ -20,7 +20,18 @@ st.caption("BlueStock FinTech Internship Project")
 # Load NAV data
 @st.cache_data
 def load_data():
-    with sqlite3.connect(DB_PATH) as conn:
+   with sqlite3.connect(DB_PATH) as conn:
+        tables = pd.read_sql_query(
+            "SELECT name FROM sqlite_master WHERE type='table'",
+            conn
+        )
+
+        if "fact_nav" not in tables["name"].values:
+            raise ValueError(
+                "Database mein fact_nav table nahi mili. "
+                "Database file ya table setup check karein."
+            )
+
         df = pd.read_sql_query(
             """
             SELECT date, nav
@@ -31,10 +42,10 @@ def load_data():
             conn
         )
 
-    df["date"] = pd.to_datetime(df["date"], errors="coerce")
-    df["nav"] = pd.to_numeric(df["nav"], errors="coerce")
-    df = df.dropna(subset=["date", "nav"])
-    return df
+        df["date"] = pd.to_datetime(df["date"], errors="coerce")
+        df["nav"] = pd.to_numeric(df["nav"], errors="coerce")
+        df = df.dropna(subset=["date", "nav"])
+        return df
 
 try:
     df = load_data()
